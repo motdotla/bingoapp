@@ -27,6 +27,7 @@ class Game
   
   # Relationships/Associations
   has n, :calls
+  has n, :cards
   
   def allowed_columns
     ["B", "I", "N", "G", "O"]
@@ -37,6 +38,43 @@ class Game
     (1..30).each {|i| allowed_numbers << "#{i}"}
     allowed_numbers
   end
+end
+
+class Card
+  include DataMapper::Resource
+  include DataMapper::Timestamp
+  include DataMapper::Serialize
+  
+  # Schema
+  property :id,                       Serial
+  property :numbers,                  Object
+  property :created_at,               DateTime
+  property :updated_at,               DateTime
+  
+  # Relationships/Associations
+  belongs_to :game
+  
+  # Callbacks
+  before :save, :generate_numbers
+  
+  def generate_numbers
+    the_numbers = []
+    25.times do
+      the_numbers << allowed_numbers[rand(allowed_numbers.length-1)]
+    end
+    self.numbers = the_numbers
+  end
+  
+  def allowed_columns
+    ["B", "I", "N", "G", "O"]
+  end
+  
+  def allowed_numbers
+    allowed_numbers = []
+    (1..30).each {|i| allowed_numbers << "#{i}"}
+    allowed_numbers
+  end
+  
 end
 
 class Call
@@ -108,7 +146,15 @@ end
 
 get "/games/:id" do
   @game = Game.get(params[:id])
-  haml :game
+  @card = @game.cards.new
+  @card.save
+  redirect "/card/#{@card.id}"
+end
+
+get "/card/:id" do
+  @card = Card.get(params[:id])
+  @game = @card.game
+  haml :card
 end
 
 

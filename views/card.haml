@@ -1,6 +1,6 @@
 %h1= @game.title
 
-%p You are playing bingo! Refresh your page every couple minutes to see the new matches you got.
+%p You are playing bingo! Refresh your page every couple minutes to see the new matches you got. Once all the numbers are crossed out call bingo and you win!!
 
 %p 
   The last call was
@@ -20,11 +20,14 @@
     %th
       O
   / have to fix this otherwise it's totally random. store in session.
+  - count = 0
   - 5.times do
     %tr
       - @game.allowed_columns.each do |column|
         %td
-          - number = @game.allowed_numbers[rand(@game.allowed_numbers.length-1)]
+          - number = @card.numbers[count]
+          - count += 1
+          / - number = @game.allowed_numbers[rand(@game.allowed_numbers.length-1)]
           - if @game.calls.map(&:column_number).include?("#{column}#{number}")
             %strike
               = number
